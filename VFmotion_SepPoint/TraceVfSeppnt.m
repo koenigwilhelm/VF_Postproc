@@ -3,10 +3,11 @@ clear all
 
 %% User option flags: (1: yes; 0: no)
 flagSaveVFanim=0;
-flagNormalizeForceX=1;
-flagNormalizeForceY=1;
-flagNormalizeEnergy=1;
-flagNormalizeBernoulli=1;
+flagNormalizeTime=1;
+flagNormalizeForceX=0;
+flagNormalizeForceY=0;
+flagNormalizeEnergy=0;
+flagNormalizeBernoulli=0;
 % start and end times for VF animation
 tsttAnim=531;
 tendAnim=1014;
@@ -177,7 +178,11 @@ massInt=poamassrt(iforw,2);
 massOut=poamassrt(iforw,3);
 massRat=poamassrt(iforw,4);
 
-tx=(tt-tsttVFcycle)/(tendVFcycle-tsttVFcycle);
+if (flagNormalizeTime==1)
+    tx=(tt-tsttVFcycle)/(tendVFcycle-tsttVFcycle);
+else
+    tx=tt;
+end
 if (flagNormalizeForceX==1)
     DenomForceX=max(abs(drivPX.*(tt>=tsttVFcycle).*(tt<=tendVFcycle)));
 else
@@ -207,8 +212,12 @@ plot(tx,-drivPX/DenomForceX,'g',...
     tx,-rateMX/DenomForceX,'b',...
     tx,(rateMX+drivPX-dragF2X)/DenomForceX,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 if (flagNormalizeForceX==1)
     ylabel('Normalized Force Terms')
 else
@@ -226,8 +235,12 @@ plot(tx,fFluidX/DenomForceX,'g',...
     tx,rateMdensX/DenomForceX,'-.b',...
     tx,(rateMX+drivPX-dragF2X)/DenomForceX,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 if (flagNormalizeForceX==1)
     ylabel('Normalized Force Terms')
 else
@@ -246,8 +259,12 @@ plot(tx,-drivPX/DenomForceX,'g',...
     tx,rateMdensX/DenomForceX,'-.b',...
     tx,(rateMX+drivPX-dragF2X)/DenomForceX,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 if (flagNormalizeForceX==1)
     ylabel('Normalized Force Terms')
 else
@@ -259,19 +276,23 @@ hlg=legend('$F_{\Delta p}+F_{VF}$','$F_f$',...
 set(hlg,'interpreter','latex','location','eastoutside')
 
 figure()
-plot(tt,fFluidY/DenomForceY,'g',...
-    tt,(-drivPY-fFluidY)/DenomForceY,'r',...
-    tt,dragF2Y/DenomForceY,'c',...
-    tt,-(rateMY+rateMflowY+rateMdensY)/DenomForceY,'b',...
-    tt,rateMflowY/DenomForceY,'--b',...
-    tt,rateMdensY/DenomForceY,'-.b',...
-    tt,(rateMY+drivPY-dragF2Y)/DenomForceY,'-.k',...
+plot(tx,fFluidY/DenomForceY,'g',...
+    tx,(-drivPY-fFluidY)/DenomForceY,'r',...
+    tx,dragF2Y/DenomForceY,'c',...
+    tx,-(rateMY+rateMflowY+rateMdensY)/DenomForceY,'b',...
+    tx,rateMflowY/DenomForceY,'--b',...
+    tx,rateMdensY/DenomForceY,'-.b',...
+    tx,(rateMY+drivPY-dragF2Y)/DenomForceY,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-% xlim([0 1])
-xlim([.1773 .1816])
 title('Y-momentum')
-xlabel('t/T')
-if (flagNormalizeForceX==1)
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+    xlim([tsttVFcycle tendVFcycle])
+end
+if (flagNormalizeForceY==1)
     ylabel('Normalized Force Terms')
 else
     ylabel('Force Terms (g\cdotcm/s)')
@@ -288,8 +309,12 @@ plot(tx,-powrPp/DenomEnergy,'g',...
     tx,-powrDs/DenomEnergy,'m',...
     tx,(rateKE+powrPp-volint)/DenomEnergy,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 if (flagNormalizeForceX==1)
     ylabel('Normalized Energy Terms')
 else
@@ -311,8 +336,12 @@ plot(tx,powrFluid/DenomEnergy,'g',...
     tx,-powrDs/DenomEnergy,'m',...
     tx,(rateKE+powrPp-volint)/DenomEnergy,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 if (flagNormalizeForceX==1)
     ylabel('Normalized Energy Terms')
 else
@@ -333,8 +362,12 @@ plot(tx,poaberups(iforw,2)/DenomBernoulliUps,'b',...
     tx,-poaberups(iforw,6)/DenomBernoulliUps,'c',...
     tx,poaberups(iforw,7)/DenomBernoulliUps,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 if (flagNormalizeForceX==1)
     ylabel('Normalized Bernoulli Terms')
 else
@@ -357,8 +390,12 @@ plot(tx,poaberdwn(iforw,2)/DenomBernoulliDwn,'b',...
     tx,-poaberdwn(iforw,6)/DenomBernoulliDwn,'c',...
     tx,poaberdwn(iforw,7)/DenomBernoulliDwn,'-.k',...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 if (flagNormalizeForceX==1)
     ylabel('Normalized Bernoulli Terms')
 else
@@ -379,8 +416,12 @@ plot(tx,massInt,...
     tx,massRat,...
     tx,poamassrt(iforw,5),...
     'LineWidth',2);set(gca,'FontSize',14)
-xlim([0 1])
-xlabel('t/T')
+if (flagNormalizeTime==1)
+    xlabel('t/T')
+    xlim([0 1])
+else
+    xlabel('t (s)')
+end
 ylabel('Mass flowrate (g/s)')
 hlg=legend('mass intake','mass outflow','rate of mass change','residual');
 set(hlg,'interpreter','latex','location','eastoutside')
