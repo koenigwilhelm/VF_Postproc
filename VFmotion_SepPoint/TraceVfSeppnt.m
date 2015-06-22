@@ -1,9 +1,12 @@
 close all
 clear all
 
+% Halfspace(0)/Fullspace(1)
+flagHalfFullSpace=0;
+
 %% Options for looks of figures
 flagFiguresVersion=1;
-flagShowResidual=1;
+flagShowResidual=0;
 
 %% User option flags: (1: yes; 0: no)
 flagSaveVFanim=0;
@@ -16,11 +19,21 @@ flagNormalizeBernoulli=0;
 tsttAnim=531;
 tendAnim=1014;
 % start and end times for VF SVD
-tsttSVD=7000;
-tendSVD=9000;
+if (flagHalfFullSpace==0)
+    tsttSVD=7000;
+    tendSVD=9000;
+else
+    tsttSVD=3000;
+    tendSVD=4000;
+end
 % start and end times for interested VF vibration cycle
-tsttVFcycle=.1773;
-tendVFcycle=.1816;
+if (flagHalfFullSpace==0)
+    tsttVFcycle=.1773;
+    tendVFcycle=.1816;
+else
+    tsttVFcycle=.09240;
+    tendVFcycle=.09666;
+end
 
 %% get unique datasets (restart of simulation often leads to duplicate time steps)
 seppnt=importdata('poa_seppnt.txt',' ');
@@ -107,78 +120,82 @@ if (flagFiguresVersion==0)
     hold off
 end
 
-%% SVD of VF motion
-Xsbc=[xsbc(tsttSVD:tendSVD,:) ysbc(tsttSVD:tendSVD,:)];
-Xsbcmean=mean(Xsbc);
-Xsbc=Xsbc-repmat(Xsbcmean,tendSVD-tsttSVD+1,1);
-[Usbc,Ssbc,Vsbc]=svd(Xsbc,'econ');
-figure()
-hold on
-if (flagFiguresVersion==1)
-    for ix=1:nstep:nnvfsurf
-        plot(xsbc(tsttSVD:tendSVD,ix)-xshift,ysbc(tsttSVD:tendSVD,ix),'m',...
-            'LineWidth',2)
-    end
-%     plot(mean(xsbc,1)-xshift,mean(ysbc,1),'g',...
-%         'LineWidth',2)
-    plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*min(Usbc(:,1))-xshift,...
-        mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*min(Usbc(:,1)),'--r',...
-        'LineWidth',2)
-    plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*max(Usbc(:,1))-xshift,...
-        mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*max(Usbc(:,1)),'-.b',...
-        'LineWidth',2)
-else
-    for ix=1:nstep:nnvfsurf
-        plot(xsbc(tsttSVD:tendSVD,ix)-xshift,ysbc(tsttSVD:tendSVD,ix),'m')
-    end
-    plot(mean(xsbc,1)-xshift,mean(ysbc,1))
-    plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*min(Usbc(:,1))-xshift,...
-        mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*min(Usbc(:,1)),'r')
-    plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*max(Usbc(:,1))-xshift,...
-        mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*max(Usbc(:,1)),'g')
-end
-set(gca,'FontSize',14)
-axis([xlim_min-xshift xlim_max-xshift 0 1.45])
-hold off
-clear Xsbc Usbc Ssbc Vsbc
-
-%% VF vibration frequency
-ymaxVSt=max(ysbc,[],2);
-hglottis=1.397-ymaxVSt;
-hglottisVar=hglottis-mean(hglottis);
-% hglottisReal=(hglottis-0.0114).*(hglottis-0.0114>0);
-hglottisReal=(hglottis-0.0073).*(hglottis-0.0073>0);
-Nfft=2^(nextpow2(nt)+6);
-Yhg=fft(hglottisVar,Nfft)/nt;
-freq=linspace(0,1,Nfft/2+1)/(2*(tt(2)-tt(1)));
-figure()
-subplot(2,1,1)
-if (flagFiguresVersion==1)
-    plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'Color','b','LineWidth',2)
-else
-    plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'LineWidth',2)
-end
-set(gca,'FontSize',14)
-axis([0 500 0 1.1])
-xlabel('frequency (Hz)')
-ylabel('relative amplitude')
-subplot(2,1,2)
-if (flagFiguresVersion==1)
-    plot(tt,hglottisReal,'Color','b','LineWidth',2)
-else
-    plot(tt,hglottis,'LineWidth',2)
-end
-ylim([-.01 .06])
-set(gca,'FontSize',14)
-xlabel('t (s)')
-ylabel('h (cm)')
-if (flagFiguresVersion==1)
+if (flagHalfFullSpace==0)
+    %% SVD of VF motion
+    Xsbc=[xsbc(tsttSVD:tendSVD,:) ysbc(tsttSVD:tendSVD,:)];
+    Xsbcmean=mean(Xsbc);
+    Xsbc=Xsbc-repmat(Xsbcmean,tendSVD-tsttSVD+1,1);
+    [Usbc,Ssbc,Vsbc]=svd(Xsbc,'econ');
     figure()
-    plot(tt(tsttSVD:tendSVD),hglottis(tsttSVD:tendSVD),'Color','b','LineWidth',2)
-    axis([tt(tsttSVD) tt(tendSVD) -.01 .07])
+    hold on
+    if (flagFiguresVersion==1)
+        for ix=1:nstep:nnvfsurf
+            plot(xsbc(tsttSVD:tendSVD,ix)-xshift,ysbc(tsttSVD:tendSVD,ix),'m',...
+                'LineWidth',2)
+        end
+    %     plot(mean(xsbc,1)-xshift,mean(ysbc,1),'g',...
+    %         'LineWidth',2)
+        plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*min(Usbc(:,1))-xshift,...
+            mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*min(Usbc(:,1)),'--r',...
+            'LineWidth',2)
+        plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*max(Usbc(:,1))-xshift,...
+            mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*max(Usbc(:,1)),'-.b',...
+            'LineWidth',2)
+    else
+        for ix=1:nstep:nnvfsurf
+            plot(xsbc(tsttSVD:tendSVD,ix)-xshift,ysbc(tsttSVD:tendSVD,ix),'m')
+        end
+        plot(mean(xsbc,1)-xshift,mean(ysbc,1))
+        plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*min(Usbc(:,1))-xshift,...
+            mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*min(Usbc(:,1)),'r')
+        plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*max(Usbc(:,1))-xshift,...
+            mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*max(Usbc(:,1)),'g')
+    end
+    set(gca,'FontSize',14)
+    axis([xlim_min-xshift xlim_max-xshift 0 1.45])
+    xlabel('x (cm)')
+    ylabel('y (cm)')
+    hold off
+    clear Xsbc Usbc Ssbc Vsbc
+
+    %% VF vibration frequency
+    ymaxVSt=max(ysbc,[],2);
+    hglottis=1.397-ymaxVSt;
+    hglottisVar=hglottis-mean(hglottis);
+    % hglottisReal=(hglottis-0.0114).*(hglottis-0.0114>0);
+    hglottisReal=(hglottis-0.0073).*(hglottis-0.0073>0);
+    Nfft=2^(nextpow2(nt)+6);
+    Yhg=fft(hglottisVar,Nfft)/nt;
+    freq=linspace(0,1,Nfft/2+1)/(2*(tt(2)-tt(1)));
+    figure()
+    subplot(2,1,1)
+    if (flagFiguresVersion==1)
+        plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'Color','b','LineWidth',2)
+    else
+        plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'LineWidth',2)
+    end
+    set(gca,'FontSize',14)
+    axis([0 500 0 1.1])
+    xlabel('frequency (Hz)')
+    ylabel('relative amplitude')
+    subplot(2,1,2)
+    if (flagFiguresVersion==1)
+        plot(tt,hglottisReal,'Color','b','LineWidth',2)
+    else
+        plot(tt,hglottis,'LineWidth',2)
+    end
+    ylim([-.01 .06])
     set(gca,'FontSize',14)
     xlabel('t (s)')
     ylabel('h (cm)')
+    if (flagFiguresVersion==1)
+        figure()
+        plot(tt(tsttSVD:tendSVD),hglottis(tsttSVD:tendSVD),'Color','b','LineWidth',2)
+        axis([tt(tsttSVD) tt(tendSVD) -.01 .07])
+        set(gca,'FontSize',14)
+        xlabel('t (s)')
+        ylabel('h (cm)')
+    end
 end
 
 %% Bernoulli's and Control Volume Analyses
@@ -266,7 +283,11 @@ if (flagFiguresVersion==1)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        if (flagHalfFullSpace==0)
+            xlim([0 1])
+        else
+            xlim([0 3])
+        end
     else
         xlabel('t (s)')
     end
@@ -293,7 +314,11 @@ if (flagFiguresVersion==1)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        if (flagHalfFullSpace==0)
+            xlim([0 1])
+        else
+            xlim([0 3])
+        end
     else
         xlabel('t (s)')
     end
@@ -313,7 +338,11 @@ if (flagFiguresVersion==1)
         'LineWidth',2);set(gca,'FontSize',14)
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        if (flagHalfFullSpace==0)
+            xlim([0 1])
+        else
+            xlim([0 3])
+        end
     else
         xlabel('t (s)')
     end
@@ -430,7 +459,11 @@ else
 end
 if (flagNormalizeTime==1)
     xlabel('t/T')
-    xlim([0 1])
+    if (flagHalfFullSpace==0)
+        xlim([0 1])
+    else
+        xlim([0 3])
+    end
 else
     xlabel('t (s)')
     xlim([tsttVFcycle tendVFcycle])
@@ -457,7 +490,11 @@ end
 hold off
 if (flagNormalizeTime==1)
     xlabel('t/T')
-    xlim([0 1])
+    if (flagHalfFullSpace==0)
+        xlim([0 1])
+    else
+        xlim([0 3])
+    end
 else
     xlabel('t (s)')
 end
@@ -488,7 +525,11 @@ if (flagFiguresVersion==1)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        if (flagHalfFullSpace==0)
+            xlim([0 1])
+        else
+            xlim([0 3])
+        end
     else
         xlabel('t (s)')
     end
@@ -512,7 +553,11 @@ if (flagFiguresVersion==1)
         'LineWidth',2);set(gca,'FontSize',14)
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        if (flagHalfFullSpace==0)
+            xlim([0 1])
+        else
+            xlim([0 3])
+        end
     else
         xlabel('t (s)')
     end
@@ -556,119 +601,121 @@ else
     set(hlg,'interpreter','latex','location','eastoutside')
 end
 
-figure()
-hold on
-plot(tx,poaberups(iforw,2)/DenomBernoulliUps,'b',...
-    tx,poaberups(iforw,3)/DenomBernoulliUps,'r',...
-    tx,poaberups(iforw,4)/DenomBernoulliUps,'g',...
-    tx,poaberups(iforw,5)/DenomBernoulliUps,'m',...
-    tx,-poaberups(iforw,6)/DenomBernoulliUps,'c',...
-    'LineWidth',2);set(gca,'FontSize',14)
-if (flagShowResidual==1)
-    plot(tx,poaberups(iforw,7)/DenomBernoulliUps,'-.k',...
-        'LineWidth',2)
-end
-hold off
-if (flagNormalizeTime==1)
-    xlabel('t/T')
-    xlim([0 1])
-else
-    xlabel('t (s)')
-end
-if (flagNormalizeForceX==1)
-    ylabel('Normalized Bernoulli Terms')
-else
-    ylabel('Bernoulli Terms (cm^2/s^2)')
-end
-if (flagFiguresVersion==0)
-    title('Contraction Region')
-end
-hlg=legend('$E_{con}$',...
-    '$E_{pre}$',...
-    '$A_{uns}$',...
-    '$E_{den}$',...
-    '$E_{vis}$',...
-    'residual');
-set(hlg,'interpreter','latex','location','eastoutside')
-
-figure()
-hold on
-plot(tx,poaberdwn(iforw,2)/DenomBernoulliDwn,'b',...
-    tx,poaberdwn(iforw,3)/DenomBernoulliDwn,'r',...
-    tx,poaberdwn(iforw,4)/DenomBernoulliDwn,'g',...
-    tx,poaberdwn(iforw,5)/DenomBernoulliDwn,'m',...
-    tx,-poaberdwn(iforw,6)/DenomBernoulliDwn,'c',...
-    'LineWidth',2);set(gca,'FontSize',14)
-if (flagShowResidual==1)
-    plot(tx,poaberdwn(iforw,7)/DenomBernoulliDwn,'-.k',...
-        'LineWidth',2)
-end
-hold off
-if (flagNormalizeTime==1)
-    xlabel('t/T')
-    xlim([0 1])
-else
-    xlabel('t (s)')
-end
-if (flagNormalizeForceX==1)
-    ylabel('Normalized Bernoulli Terms')
-else
-    ylabel('Bernoulli Terms (cm^2/s^2)')
-end
-if (flagFiguresVersion==0)
-    title('Jet Region')
-end
-hlg=legend('$E_{con}$',...
-    '$E_{pre}$',...
-    '$A_{uns}$',...
-    '$E_{den}$',...
-    '$E_{vis}$',...
-    'residual');
-set(hlg,'interpreter','latex','location','eastoutside')
-
-figure()
-hold on
-plot(tx,massInt,'g',...
-    tx,massOut,'r',...
-    tx,massRat,'b',...
-    'LineWidth',2);set(gca,'FontSize',14)
-if (flagShowResidual==1)
-    plot(tx,poamassrt(iforw,5),'-.k',...
-        tx,tx*0,'--m',...
-        'LineWidth',2)
-end
-hold off
-if (flagNormalizeTime==1)
-    xlabel('t/T')
-    xlim([0 1])
-else
-    xlabel('t (s)')
-end
-ylabel('Mass flowrate (g/s)')
-hlg=legend('mass intake','mass outflow','rate of mass change','residual');
-set(hlg,'interpreter','latex','location','eastoutside')
-
-if (flagFiguresVersion==0)
+if (flagHalfFullSpace==0)
     figure()
-    subplot(3,1,1)
-    plot(tt,Qsep,'LineWidth',2);set(gca,'FontSize',14)
-    % axis([0 .01 0 70])
-    xlabel('t (s)')
-    ylabel('Q_{sep} (cm^2/s)')
-    subplot(3,1,2)
-    plot(tt,1.397-ysep,'LineWidth',2);set(gca,'FontSize',14)
-    % axis([0 .01 0 .11])
-    xlabel('t (s)')
-    ylabel('S_{sep} (cm)')
-    subplot(3,1,3)
-    plot(tt,xsep,'LineWidth',2);set(gca,'FontSize',14)
-    % axis([0 .01 3.2 3.35])
-    xlabel('t (s)')
-    ylabel('x_{sep} (cm)')
-end
+    hold on
+    plot(tx,poaberups(iforw,2)/DenomBernoulliUps,'b',...
+        tx,poaberups(iforw,3)/DenomBernoulliUps,'r',...
+        tx,poaberups(iforw,4)/DenomBernoulliUps,'g',...
+        tx,poaberups(iforw,5)/DenomBernoulliUps,'m',...
+        tx,-poaberups(iforw,6)/DenomBernoulliUps,'c',...
+        'LineWidth',2);set(gca,'FontSize',14)
+    if (flagShowResidual==1)
+        plot(tx,poaberups(iforw,7)/DenomBernoulliUps,'-.k',...
+            'LineWidth',2)
+    end
+    hold off
+    if (flagNormalizeTime==1)
+        xlabel('t/T')
+        xlim([0 1])
+    else
+        xlabel('t (s)')
+    end
+    if (flagNormalizeForceX==1)
+        ylabel('Normalized Bernoulli Terms')
+    else
+        ylabel('Bernoulli Terms (cm^2/s^2)')
+    end
+    if (flagFiguresVersion==0)
+        title('Contraction Region')
+    end
+    hlg=legend('$E_{con}$',...
+        '$E_{pre}$',...
+        '$A_{uns}$',...
+        '$E_{den}$',...
+        '$E_{vis}$',...
+        'residual');
+    set(hlg,'interpreter','latex','location','eastoutside')
 
-figure()
-plot(tx,hglottisReal,'LineWidth',2);set(gca,'FontSize',14)
-axis([0 1 -.01 .06])
-xlabel('t (s)')
-ylabel('h (cm)')
+    figure()
+    hold on
+    plot(tx,poaberdwn(iforw,2)/DenomBernoulliDwn,'b',...
+        tx,poaberdwn(iforw,3)/DenomBernoulliDwn,'r',...
+        tx,poaberdwn(iforw,4)/DenomBernoulliDwn,'g',...
+        tx,poaberdwn(iforw,5)/DenomBernoulliDwn,'m',...
+        tx,-poaberdwn(iforw,6)/DenomBernoulliDwn,'c',...
+        'LineWidth',2);set(gca,'FontSize',14)
+    if (flagShowResidual==1)
+        plot(tx,poaberdwn(iforw,7)/DenomBernoulliDwn,'-.k',...
+            'LineWidth',2)
+    end
+    hold off
+    if (flagNormalizeTime==1)
+        xlabel('t/T')
+        xlim([0 1])
+    else
+        xlabel('t (s)')
+    end
+    if (flagNormalizeForceX==1)
+        ylabel('Normalized Bernoulli Terms')
+    else
+        ylabel('Bernoulli Terms (cm^2/s^2)')
+    end
+    if (flagFiguresVersion==0)
+        title('Jet Region')
+    end
+    hlg=legend('$E_{con}$',...
+        '$E_{pre}$',...
+        '$A_{uns}$',...
+        '$E_{den}$',...
+        '$E_{vis}$',...
+        'residual');
+    set(hlg,'interpreter','latex','location','eastoutside')
+
+    figure()
+    hold on
+    plot(tx,massInt,'g',...
+        tx,massOut,'r',...
+        tx,massRat,'b',...
+        'LineWidth',2);set(gca,'FontSize',14)
+    if (flagShowResidual==1)
+        plot(tx,poamassrt(iforw,5),'-.k',...
+            tx,tx*0,'--m',...
+            'LineWidth',2)
+    end
+    hold off
+    if (flagNormalizeTime==1)
+        xlabel('t/T')
+        xlim([0 1])
+    else
+        xlabel('t (s)')
+    end
+    ylabel('Mass flowrate (g/s)')
+    hlg=legend('mass intake','mass outflow','rate of mass change','residual');
+    set(hlg,'interpreter','latex','location','eastoutside')
+
+    if (flagFiguresVersion==0)
+        figure()
+        subplot(3,1,1)
+        plot(tt,Qsep,'LineWidth',2);set(gca,'FontSize',14)
+        % axis([0 .01 0 70])
+        xlabel('t (s)')
+        ylabel('Q_{sep} (cm^2/s)')
+        subplot(3,1,2)
+        plot(tt,1.397-ysep,'LineWidth',2);set(gca,'FontSize',14)
+        % axis([0 .01 0 .11])
+        xlabel('t (s)')
+        ylabel('S_{sep} (cm)')
+        subplot(3,1,3)
+        plot(tt,xsep,'LineWidth',2);set(gca,'FontSize',14)
+        % axis([0 .01 3.2 3.35])
+        xlabel('t (s)')
+        ylabel('x_{sep} (cm)')
+    end
+
+    figure()
+    plot(tx,hglottisReal,'LineWidth',2);set(gca,'FontSize',14)
+    axis([0 1 -.01 .06])
+    xlabel('t (s)')
+    ylabel('h (cm)')
+end
