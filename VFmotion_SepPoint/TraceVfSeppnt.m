@@ -115,15 +115,17 @@ figure()
 hold on
 if (flagFiguresVersion==1)
     for ix=1:nstep:nnvfsurf
-        plot(xsbc(tsttSVD:tendSVD,ix)-xshift,ysbc(tsttSVD:tendSVD,ix),'m')
+        plot(xsbc(tsttSVD:tendSVD,ix)-xshift,ysbc(tsttSVD:tendSVD,ix),'m',...
+            'LineWidth',2)
     end
-    plot(mean(xsbc,1)-xshift,mean(ysbc,1),'g')
+%     plot(mean(xsbc,1)-xshift,mean(ysbc,1),'g',...
+%         'LineWidth',2)
     plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*min(Usbc(:,1))-xshift,...
         mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*min(Usbc(:,1)),'--r',...
-        'LineWidth',1)
+        'LineWidth',2)
     plot(mean(xsbc,1)+Vsbc(1:nnvfsurf,1)'*Ssbc(1,1)*max(Usbc(:,1))-xshift,...
         mean(ysbc,1)+Vsbc(nnvfsurf+1:end,1)'*Ssbc(1,1)*max(Usbc(:,1)),'-.b',...
-        'LineWidth',1)
+        'LineWidth',2)
 else
     for ix=1:nstep:nnvfsurf
         plot(xsbc(tsttSVD:tendSVD,ix)-xshift,ysbc(tsttSVD:tendSVD,ix),'m')
@@ -151,7 +153,7 @@ freq=linspace(0,1,Nfft/2+1)/(2*(tt(2)-tt(1)));
 figure()
 subplot(2,1,1)
 if (flagFiguresVersion==1)
-    plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'Color','b','LineWidth',1)
+    plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'Color','b','LineWidth',2)
 else
     plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'LineWidth',2)
 end
@@ -161,7 +163,7 @@ xlabel('frequency (Hz)')
 ylabel('relative amplitude')
 subplot(2,1,2)
 if (flagFiguresVersion==1)
-    plot(tt,hglottisReal,'Color','b','LineWidth',1)
+    plot(tt,hglottisReal,'Color','b','LineWidth',2)
 else
     plot(tt,hglottis,'LineWidth',2)
 end
@@ -578,7 +580,7 @@ if (flagNormalizeForceX==1)
 else
     ylabel('Bernoulli Terms (cm^2/s^2)')
 end
-if (flagFiguresVersion==1)
+if (flagFiguresVersion==0)
     title('Jet Region')
 end
 hlg=legend('$E_{con}$',...
