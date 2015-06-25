@@ -7,6 +7,11 @@ flagHalfFullSpace=0;
 %% Options for looks of figures
 flagFiguresVersion=1;
 flagShowResidual=0;
+flagLegend=0;
+xRangePlot=[0 3];
+wFig=800;
+hFig=500;
+scrsz=get(0,'ScreenSize');
 
 %% User option flags: (1: yes; 0: no)
 flagSaveVFanim=0;
@@ -106,6 +111,7 @@ end
 %% plot results
 if (flagFiguresVersion==0)
     figure()
+    setFigureSize
     hold on
     for ix=1:nstep:nnvfsurf
         plot(xsbc(:,ix)-xshift,ysbc(:,ix),'m')
@@ -127,6 +133,7 @@ if (flagHalfFullSpace==0)
     Xsbc=Xsbc-repmat(Xsbcmean,tendSVD-tsttSVD+1,1);
     [Usbc,Ssbc,Vsbc]=svd(Xsbc,'econ');
     figure()
+    setFigureSize
     hold on
     if (flagFiguresVersion==1)
         for ix=1:nstep:nnvfsurf
@@ -168,6 +175,7 @@ if (flagHalfFullSpace==0)
     Yhg=fft(hglottisVar,Nfft)/nt;
     freq=linspace(0,1,Nfft/2+1)/(2*(tt(2)-tt(1)));
     figure()
+    setFigureSize
     subplot(2,1,1)
     if (flagFiguresVersion==1)
         plot(freq,abs(Yhg(1:Nfft/2+1))/max(abs(Yhg(1:Nfft/2+1))),'Color','b','LineWidth',2)
@@ -188,8 +196,11 @@ if (flagHalfFullSpace==0)
     set(gca,'FontSize',14)
     xlabel('t (s)')
     ylabel('h (cm)')
+    
+    %% Steady-state vibration pattern
     if (flagFiguresVersion==1)
         figure()
+        setFigureSize
         plot(tt(tsttSVD:tendSVD),hglottis(tsttSVD:tendSVD),'Color','b','LineWidth',2)
         axis([tt(tsttSVD) tt(tendSVD) -.01 .07])
         set(gca,'FontSize',14)
@@ -270,6 +281,7 @@ end
 if (flagFiguresVersion==1)
     % all terms separate, except decompostion of momentum flux
     figure()
+    setFigureSize
     hold on
     plot(tx,fFluidX/DenomForceX,'g',...
         tx,(-drivPX-fFluidX)/DenomForceX,'r',...
@@ -283,11 +295,7 @@ if (flagFiguresVersion==1)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        if (flagHalfFullSpace==0)
-            xlim([0 1])
-        else
-            xlim([0 3])
-        end
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -296,12 +304,15 @@ if (flagFiguresVersion==1)
     else
         ylabel('Force Terms (g\cdotcm/s)')
     end
-    hlg=legend('$F_{\Delta p}$','$F_{VF}$','$F_f$',...
-        '$-\dot{P}_{CV}$',...
-        'residual');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('$F_{\Delta p}$','$F_{VF}$','$F_f$',...
+            '$-\dot{P}_{CV}$',...
+            'residual');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
     % pressure drive and drag combined as a net pressure force
     figure()
+    setFigureSize
     hold on
     plot(tx,-drivPX/DenomForceX,'g',...
         tx,dragF2X/DenomForceX,'c',...
@@ -314,11 +325,7 @@ if (flagFiguresVersion==1)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        if (flagHalfFullSpace==0)
-            xlim([0 1])
-        else
-            xlim([0 3])
-        end
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -327,22 +334,23 @@ if (flagFiguresVersion==1)
     else
         ylabel('Force Terms (g\cdotcm/s)')
     end
-    hlg=legend('$F_{\Delta p}+F_{VF}$','$F_f$','$-\dot{P}_{CV}$','residual');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('$F_{\Delta p}+F_{VF}$','$F_f$','$-\dot{P}_{CV}$','residual');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
     % decomposition of the momentum flux term
     figure()
+    setFigureSize
+    hold on
     plot(tx,(rateMX)/DenomForceX,'b',...
         tx,(rateMX+rateMflowX+rateMdensX)/DenomForceX,'-.r',...
         tx,-rateMflowX/DenomForceX,'--m',...
         tx,-rateMdensX/DenomForceX,':g',...
         'LineWidth',2);set(gca,'FontSize',14)
+    hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        if (flagHalfFullSpace==0)
-            xlim([0 1])
-        else
-            xlim([0 3])
-        end
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -351,9 +359,11 @@ if (flagFiguresVersion==1)
     else
         ylabel('Force Terms (g\cdotcm/s)')
     end
-    hlg=legend('$\dot{P}_{CV}$',...
-        '$\dot{P}_{CV,acc}$','$-\dot{P}_{CV,inf}$','$-\dot{P}_{CV,den}$');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('$\dot{P}_{CV}$',...
+            '$\dot{P}_{CV,acc}$','$-\dot{P}_{CV,inf}$','$-\dot{P}_{CV,den}$');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
 else
     % pressure drive and drag combined as a net pressure force
     figure()
@@ -364,7 +374,7 @@ else
         'LineWidth',2);set(gca,'FontSize',14)
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -387,7 +397,7 @@ else
         'LineWidth',2);set(gca,'FontSize',14)
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -412,7 +422,7 @@ else
         'LineWidth',2);set(gca,'FontSize',14)
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -429,6 +439,7 @@ end
 
 % Y-momentum
 figure()
+setFigureSize
 if (flagFiguresVersion==1)
     hold on
     plot(tx,(-drivPY-fFluidY)/DenomForceY,'r',...
@@ -441,8 +452,10 @@ if (flagFiguresVersion==1)
             'LineWidth',2)
     end
     hold off
-    hlg=legend('$F_{VF}$','$-\dot{P}_{CV}$','$F_{\Delta p}$','$F_f$',...
-        'residual');
+    if (flagLegend==1)
+        hlg=legend('$F_{VF}$','$-\dot{P}_{CV}$','$F_{\Delta p}$','$F_f$',...
+            'residual');
+    end
 else
     plot(tx,fFluidY/DenomForceY,'g',...
         tx,(-drivPY-fFluidY)/DenomForceY,'r',...
@@ -459,11 +472,7 @@ else
 end
 if (flagNormalizeTime==1)
     xlabel('t/T')
-    if (flagHalfFullSpace==0)
-        xlim([0 1])
-    else
-        xlim([0 3])
-    end
+    xlim(xRangePlot)
 else
     xlabel('t (s)')
     xlim([tsttVFcycle tendVFcycle])
@@ -473,10 +482,13 @@ if (flagNormalizeForceY==1)
 else
     ylabel('Force Terms (g\cdotcm/s)')
 end
-set(hlg,'interpreter','latex','location','eastoutside')
+if (flagLegend==1)
+    set(hlg,'interpreter','latex','location','eastoutside')
+end
 
 % pressure work on boundary and compression work combined
 figure()
+setFigureSize
 hold on
 plot(tx,-powrPp/DenomEnergy,'g',...
     tx,(volint+powrDs)/DenomEnergy,'c',...
@@ -490,11 +502,7 @@ end
 hold off
 if (flagNormalizeTime==1)
     xlabel('t/T')
-    if (flagHalfFullSpace==0)
-        xlim([0 1])
-    else
-        xlim([0 3])
-    end
+    xlim(xRangePlot)
 else
     xlabel('t (s)')
 end
@@ -503,13 +511,16 @@ if (flagNormalizeForceX==1)
 else
     ylabel('Energy Terms (g\cdotcm^2/s^2)')
 end
-hlg=legend('$\dot{W}_{\Delta p}+\dot{W}_{VF}-\dot{W}_{compression}$',...
-    '$\dot{W}_{f}$','$-\dot{KE}_{CV}$','$-\dot{W}_{dissipation}$',...
-    'residual');
-set(hlg,'interpreter','latex','location','eastoutside')
+if (flagLegend==1)
+    hlg=legend('$\dot{W}_{\Delta p}+\dot{W}_{VF}-\dot{W}_{compression}$',...
+        '$\dot{W}_{f}$','$-\dot{KE}_{CV}$','$-\dot{W}_{dissipation}$',...
+        'residual');
+    set(hlg,'interpreter','latex','location','eastoutside')
+end
 if (flagFiguresVersion==1)
     % all terms plotted separately
     figure()
+    setFigureSize
     hold on
     plot(tx,powrFluid/DenomEnergy,'g',...
         tx,(-powrPp-powrFluid-powrCompr)/DenomEnergy,'r',...
@@ -525,11 +536,7 @@ if (flagFiguresVersion==1)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        if (flagHalfFullSpace==0)
-            xlim([0 1])
-        else
-            xlim([0 3])
-        end
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -538,26 +545,27 @@ if (flagFiguresVersion==1)
     else
         ylabel('Energy Terms (g\cdotcm^2/s^2)')
     end
-    hlg=legend('$\dot{W}_{\Delta p}$','$\dot{W}_{VF}$','$\dot{W}_{f}$',...
-        '$-\dot{KE}_{CV}$',...
-        '$-\dot{W}_{compression}$',...
-        '$-\dot{W}_{dissipation}$',...
-        'residual');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('$\dot{W}_{\Delta p}$','$\dot{W}_{VF}$','$\dot{W}_{f}$',...
+            '$-\dot{KE}_{CV}$',...
+            '$-\dot{W}_{compression}$',...
+            '$-\dot{W}_{dissipation}$',...
+            'residual');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
     % KE rate decomposed
     figure()
+    setFigureSize
+    hold on
     plot(tx,(rateKE)/DenomEnergy,'b',...
         tx,(rateKE+rateKEflow+rateKEdens)/DenomEnergy,'-.r',...
         tx,-rateKEflow/DenomEnergy,'--m',...
         tx,-rateKEdens/DenomEnergy,':g',...
         'LineWidth',2);set(gca,'FontSize',14)
+    hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        if (flagHalfFullSpace==0)
-            xlim([0 1])
-        else
-            xlim([0 3])
-        end
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -566,9 +574,11 @@ if (flagFiguresVersion==1)
     else
         ylabel('Energy Terms (g\cdotcm^2/s^2)')
     end
-    hlg=legend('$\dot{KE}_{CV}$',...
-        '$\dot{KE}_{CV,acc}$','$-\dot{KE}_{CV,inf}$','$-\dot{KE}_{CV,den}$');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('$\dot{KE}_{CV}$',...
+            '$\dot{KE}_{CV,acc}$','$-\dot{KE}_{CV,inf}$','$-\dot{KE}_{CV,den}$');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
 else
     % all terms plotted separately, even KE rate decomposed
     figure()
@@ -584,7 +594,7 @@ else
         'LineWidth',2);set(gca,'FontSize',14)
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -603,6 +613,7 @@ end
 
 if (flagHalfFullSpace==0)
     figure()
+    setFigureSize
     hold on
     plot(tx,poaberups(iforw,2)/DenomBernoulliUps,'b',...
         tx,poaberups(iforw,3)/DenomBernoulliUps,'r',...
@@ -617,7 +628,7 @@ if (flagHalfFullSpace==0)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -629,15 +640,18 @@ if (flagHalfFullSpace==0)
     if (flagFiguresVersion==0)
         title('Contraction Region')
     end
-    hlg=legend('$E_{con}$',...
-        '$E_{pre}$',...
-        '$A_{uns}$',...
-        '$E_{den}$',...
-        '$E_{vis}$',...
-        'residual');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('$E_{con}$',...
+            '$E_{pre}$',...
+            '$A_{uns}$',...
+            '$E_{den}$',...
+            '$E_{vis}$',...
+            'residual');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
 
     figure()
+    setFigureSize
     hold on
     plot(tx,poaberdwn(iforw,2)/DenomBernoulliDwn,'b',...
         tx,poaberdwn(iforw,3)/DenomBernoulliDwn,'r',...
@@ -652,7 +666,7 @@ if (flagHalfFullSpace==0)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
@@ -664,15 +678,18 @@ if (flagHalfFullSpace==0)
     if (flagFiguresVersion==0)
         title('Jet Region')
     end
-    hlg=legend('$E_{con}$',...
-        '$E_{pre}$',...
-        '$A_{uns}$',...
-        '$E_{den}$',...
-        '$E_{vis}$',...
-        'residual');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('$E_{con}$',...
+            '$E_{pre}$',...
+            '$A_{uns}$',...
+            '$E_{den}$',...
+            '$E_{vis}$',...
+            'residual');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
 
     figure()
+    setFigureSize
     hold on
     plot(tx,massInt,'g',...
         tx,massOut,'r',...
@@ -686,16 +703,19 @@ if (flagHalfFullSpace==0)
     hold off
     if (flagNormalizeTime==1)
         xlabel('t/T')
-        xlim([0 1])
+        xlim(xRangePlot)
     else
         xlabel('t (s)')
     end
     ylabel('Mass flowrate (g/s)')
-    hlg=legend('mass intake','mass outflow','rate of mass change','residual');
-    set(hlg,'interpreter','latex','location','eastoutside')
+    if (flagLegend==1)
+        hlg=legend('mass intake','mass outflow','rate of mass change','residual');
+        set(hlg,'interpreter','latex','location','eastoutside')
+    end
 
     if (flagFiguresVersion==0)
         figure()
+        setFigureSize
         subplot(3,1,1)
         plot(tt,Qsep,'LineWidth',2);set(gca,'FontSize',14)
         % axis([0 .01 0 70])
@@ -714,7 +734,10 @@ if (flagHalfFullSpace==0)
     end
 
     figure()
+    setFigureSize
+    hold on
     plot(tx,hglottisReal,'LineWidth',2);set(gca,'FontSize',14)
+    hold off
     axis([0 1 -.01 .06])
     xlabel('t (s)')
     ylabel('h (cm)')
